@@ -234,12 +234,12 @@ if ((itarget==0).or.(i==itarget)) then
         ENDDO
         IF (LCHECK) WRITE(*,'(A,I5,X,I2,A,100I8)') '***** STATE ',I,K,'-FOLD DEGENERATE:',(LIST(J),J=1,K)
         IF (.NOT.LCHECK) WRITE(*,'(A,I5,X,I2,A,100I8)') '===== STATE ',I,K,'-FOLD DEGENERATE, UNCOUPLED:',(LIST(J),J=1,K)
-        WRITE(6,'(A,I3,A)') 'ORDER:',IORDER,' ACCUMULATED HIRSCHFELDER-CERTAIN ENERGY MATRIX'
+!       WRITE(6,'(A,I3,A)') 'ORDER:',IORDER,' ACCUMULATED HIRSCHFELDER-CERTAIN ENERGY MATRIX'
 ! *** NOTE: Diagonalization of incremental (e.g., second-order) H-C energy matrix gives
 !           correct eigenvalues, but the order of states is scrambled. Summing over eigenvalues
 !           in the order of their sizes will be incorrect. The same eigenvector for a higher
 !           perturbation order diagonalizes all lower-order H-C energy matrices.
-        CALL DUMP5(A,K)
+!       CALL DUMP5(A,K)
         CALL DGEEV('N','V',K,A,K,ER,EI,VL,1,VR,K,WK,4*K,INFO)
         IF (INFO /= 0) CALL PABORT('DGEEV FAILED TO DIAGONALIZE A MATRIX')
         CALL PIKSRT2(K,K,ER,EI,VR,WK)
@@ -340,6 +340,8 @@ endif
 
     DO IORDER=1,ORDER
      CALL EHC_GEN_MIN(IORDER,0,LIST,JDEGEN)
+!    WRITE(6,'(A,I3,A)') 'ORDER:',IORDER,' INCREMENTAL HIRSCHFELDER-CERTAIN ENERGY MATRIX'
+!    CALL DUMP5(EHC(:,:,IORDER),JDEGEN)
      EHCSUM=EHCSUM+EHC(:,:,IORDER)
      ALLOCATE(A(JDEGEN,JDEGEN),ER(JDEGEN),EI(JDEGEN),VR(JDEGEN,JDEGEN),VL(1,JDEGEN),WK(4*JDEGEN))
      LCHECK=.FALSE.
