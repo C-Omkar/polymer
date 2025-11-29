@@ -12,4 +12,5 @@ FLAGS = -c -O2
 	$(FC) $(FLAGS) $*.f
 
 blas.a: $(OBJS)
-	ar lruv blas.a $(OBJS)
+# 	ar lruv blas.a $(OBJS)
+	ar rcs blas.a $(OBJS)

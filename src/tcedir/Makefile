@@ -24,4 +24,5 @@ FLAGS = -c -O2
 	$(FC) $(FLAGS) $*.f
 
 tcedir.a: $(OBJS)
-	ar lruv tcedir.a $(OBJS)
+# 	ar lruv tcedir.a $(OBJS)
+	ar rcs tcedir.a $(OBJS)

@@ -12,4 +12,5 @@ FLAGS = -c -O2
 	$(FC) $(FLAGS) $*.f
 
 linpack.a: $(OBJS)
-	ar lruv linpack.a $(OBJS)
+# 	ar lruv linpack.a $(OBJS)
+	ar rcs linpack.a $(OBJS)

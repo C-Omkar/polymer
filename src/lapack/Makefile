@@ -12,4 +12,6 @@ FLAGS = -c -O2
 	$(FC) $(FLAGS) $*.f
 
 lapack.a: $(OBJS)
-	ar lruv lapack.a $(OBJS)
+# 	ar lruv lapack.a $(OBJS)
+	ar rcs lapack.a $(OBJS)
+
