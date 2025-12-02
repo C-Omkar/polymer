@@ -550,6 +550,8 @@ SUBROUTINE FOCK_BUILD_ARBITRARY_T_MO
     ALLOCATE(F_C_SAVE(NCGS,NCGS,-CEL1X:CEL1X,-CEL1Y:CEL1Y,-CEL1Z:CEL1Z))
     ALLOCATE(MPE(NCGS,NCGS,-CEL1X:CEL1X),W1(NCGS,NCGS))
 
+    WRITE(6,'(A)') 'FOCK MATRIX AT MP TEMPERATURE WILL BE CONSTRUCTED'
+
 
 
     TEMPMP=DOPTN(98)
@@ -567,48 +569,48 @@ SUBROUTINE FOCK_BUILD_ARBITRARY_T_MO
     DO IZ=-KVCZ,MAX(0,KVCZ-1)
     DO IY=-KVCY,MAX(0,KVCY-1)
     DO IX=-KVCX,MAX(0,KVCX-1)
-        WS(:,:)=(0.0D0,0.0D0)
-        DO L=1,NCGS
-            OCC=2.0D0/(DEXP((EPSILON(L,IX,IY,IZ)-FERMI_MP)/BOLTZMANN/TEMPMP)+1.0D0)
-            DO J=1,NCGS
-            DO K=1,NCGS
-              WS(K,J)=WS(K,J)+OCC*DCONJG(CO(K,L,IX,IY,IZ))*CO(J,L,IX,IY,IZ)
-            ENDDO
-            ENDDO
-        ENDDO
-
-        IF (KVCX == 0) THEN
-          PX=DCMPLX(0.0D0,0.0D0)
-        ELSE
-          PX=DCMPLX(0.0D0,PI*DFLOAT(IX)/DFLOAT(KVCX))
-        ENDIF
-        IF (KVCY == 0) THEN
-          PY=DCMPLX(0.0D0,0.0D0)
-        ELSE
-          PY=DCMPLX(0.0D0,PI*DFLOAT(IY)/DFLOAT(KVCY))
-        ENDIF
-        IF (KVCZ == 0) THEN
-          PZ=DCMPLX(0.0D0,0.0D0)
-        ELSE
-          PZ=DCMPLX(0.0D0,PI*DFLOAT(IZ)/DFLOAT(KVCZ))
-        ENDIF
-        W=1.0D0/DFLOAT(MAX(1,2*KVCX)*MAX(1,2*KVCY)*MAX(1,2*KVCZ))
-
-        DO QX=-CEL1X,CEL1X
-        DO QY=-CEL1Y,CEL1Y
-        DO QZ=-CEL1Z,CEL1Z
-            PQX = PX*DFLOAT(QX)
-            PQY = PY*DFLOAT(QY)
-            PQZ = PZ*DFLOAT(QZ)
-            DO J=1,NCGS
-            DO K=1,NCGS
-                P_MP(J,K,QX,QY,QZ)=P_MP(J,K,QX,QY,QZ)+WS(J,K)*CDEXP(PQX+PQY+PQZ)*W
-            ENDDO
-            ENDDO
-
-        ENDDO
-        ENDDO
-        ENDDO
+     WS(:,:)=(0.0D0,0.0D0)
+     DO L=1,NCGS
+      OCC=2.0D0/(DEXP((EPSILON(L,IX,IY,IZ)-FERMI_MP)/BOLTZMANN/TEMPMP)+1.0D0)
+      DO J=1,NCGS
+      DO K=1,NCGS
+       WS(K,J)=WS(K,J)+OCC*DCONJG(CO(K,L,IX,IY,IZ))*CO(J,L,IX,IY,IZ)
+      ENDDO
+      ENDDO
+     ENDDO
+ 
+     IF (KVCX == 0) THEN
+      PX=DCMPLX(0.0D0,0.0D0)
+     ELSE
+      PX=DCMPLX(0.0D0,PI*DFLOAT(IX)/DFLOAT(KVCX))
+     ENDIF
+     IF (KVCY == 0) THEN
+      PY=DCMPLX(0.0D0,0.0D0)
+     ELSE
+      PY=DCMPLX(0.0D0,PI*DFLOAT(IY)/DFLOAT(KVCY))
+     ENDIF
+     IF (KVCZ == 0) THEN
+      PZ=DCMPLX(0.0D0,0.0D0)
+     ELSE
+      PZ=DCMPLX(0.0D0,PI*DFLOAT(IZ)/DFLOAT(KVCZ))
+     ENDIF
+     W=1.0D0/DFLOAT(MAX(1,2*KVCX)*MAX(1,2*KVCY)*MAX(1,2*KVCZ))
+ 
+     DO QX=-CEL1X,CEL1X
+     DO QY=-CEL1Y,CEL1Y
+     DO QZ=-CEL1Z,CEL1Z
+      PQX = PX*DFLOAT(QX)
+      PQY = PY*DFLOAT(QY)
+      PQZ = PZ*DFLOAT(QZ)
+      DO J=1,NCGS
+      DO K=1,NCGS
+       P_MP(J,K,QX,QY,QZ)=P_MP(J,K,QX,QY,QZ)+WS(J,K)*CDEXP(PQX+PQY+PQZ)*W
+      ENDDO
+      ENDDO
+ 
+     ENDDO
+     ENDDO
+     ENDDO
 
     ENDDO
     ENDDO
@@ -616,7 +618,7 @@ SUBROUTINE FOCK_BUILD_ARBITRARY_T_MO
 
     P_C=P_MP
 
-    WRITE (6,'(A)') 'BUILDING FOCK MATRIX FOR MP TEMPERATURE AFTER SCF'
+    ! WRITE (6,'(A)') 'BUILDING FOCK MATRIX FOR MP TEMPERATURE AFTER SCF'
 
     CALL RESTORE_FOURINDEX_ERI
 
@@ -744,91 +746,94 @@ SUBROUTINE FOCK_BUILD_ARBITRARY_T_MO
     ENDIF
 
     ! PRINTING F_C GRID STRUCTURE FOR CELL
-    WRITE(*,'(A)') 'F_C MATRIX ELEMENTS:'
-     DO I=1,NCGS
-      WRITE(*,'(I5,2X)',ADVANCE='NO') I
-      DO J=1,NCGS
-       WRITE(*,'(F15.6,2X)',ADVANCE='NO') F_C(I,J,0,0,0)
-      ENDDO
-      WRITE(*,*)
-     ENDDO
+    ! WRITE(*,'(A)') 'F_C MATRIX ELEMENTS:'
+    !  DO I=1,NCGS
+    !   WRITE(*,'(I5,2X)',ADVANCE='NO') I
+    !   DO J=1,NCGS
+    !    WRITE(*,'(F15.6,2X)',ADVANCE='NO') F_C(I,J,0,0,0)
+    !   ENDDO
+    !   WRITE(*,*)
+    !  ENDDO
+
+    IF ((IOPTN(9) >= 2).AND.(MYID == 0)) THEN
+     WRITE(6,'(A)') 'FOCK MATRIX AT MP TEMPERATURE FOR CONTRACTED GAUSSIANS'
+     CALL DUMP1(F_C,NCGS,CEL1X,CEL1Y,CEL1Z)
+    ENDIF
 
 
 
     DO IX=-KVCX,MAX(0,KVCX-1)
     DO IY=-KVCY,MAX(0,KVCY-1)
     DO IZ=-KVCZ,MAX(0,KVCZ-1)
-        WF(:,:)=DCMPLX(0.0D0,0.0D0)
-        TMP(:,:)=DCMPLX(0.0D0,0.0D0)
-        WK(:,:)=DCMPLX(0.0D0,0.0D0)
+     WF(:,:)=DCMPLX(0.0D0,0.0D0)
+     TMP(:,:)=DCMPLX(0.0D0,0.0D0)
+     WK(:,:)=DCMPLX(0.0D0,0.0D0)
 
-        IF (KVCX == 0) THEN
-          PX=DCMPLX(0.0D0,0.0D0)
-        ELSE
-          PX=DCMPLX(0.0D0,PI*DFLOAT(IX)/DFLOAT(KVCX))
-        ENDIF
-        IF (KVCY == 0) THEN
-          PY=DCMPLX(0.0D0,0.0D0)
-        ELSE
-          PY=DCMPLX(0.0D0,PI*DFLOAT(IY)/DFLOAT(KVCY))
-        ENDIF
-        IF (KVCZ == 0) THEN
-          PZ=DCMPLX(0.0D0,0.0D0)
-        ELSE
-          PZ=DCMPLX(0.0D0,PI*DFLOAT(IZ)/DFLOAT(KVCZ))
-        ENDIF
-        W=1.0D0/DFLOAT(MAX(1,2*KVCX)*MAX(1,2*KVCY)*MAX(1,2*KVCZ))
-
-        DO QX=-CEL1X,CEL1X
-        DO QY=-CEL1Y,CEL1Y
-        DO QZ=-CEL1Z,CEL1Z
-            PQX=PX*DFLOAT(QX)
-            PQY=PY*DFLOAT(QY)
-            PQZ=PZ*DFLOAT(QZ)
-
-            DO J=1,NCGS
-            DO K=1,NCGS
-                WF(K,J)=WF(K,J)+F_C(K,J,QX,QY,QZ)*CDEXP(PQX+PQY+PQZ)
-                ! WRITE(*,*) 'F_C(',K,',',J,',',QX,',',QY,',',QZ,') = ',F_C(K,J,QX,QY,QZ)
-                ! WRITE(*,*) 'WF(',K,',',J,') = ',WF(K,J)
-            ENDDO
-            ENDDO
-        ENDDO
-        ENDDO
-        ENDDO
-
-        DO J=1,NCGS
-        DO K=1,NCGS
-            AVE=(WF(K,J)+DCONJG(WF(J,K)))/2.0D0
-            WF(K,J)=AVE
-            WF(J,K)=DCONJG(AVE)
-        ENDDO
-        ENDDO
-
-        DO J=1,NCGS
-        DO K=1,NCGS
-
-            TMP(J,K)=DCMPLX(0.0D0,0.0D0)
-            DO L=1,NCGS
-                TMP(J,K)=TMP(J,K)+WF(J,L)*CO(L,K,IX,IY,IZ)
-            ENDDO
-        ENDDO
-        ENDDO
-
-        DO J=1,NCGS
-        DO K=1,NCGS
-            WK(J,K)=DCMPLX(0.0D0,0.0D0)
-            DO L=1,NCGS
-                WK(J,K)=WK(J,K)+DCONJG(CO(L,J,IX,IY,IZ))*TMP(L,K)
-            ENDDO
-        ENDDO
-        ENDDO
-
-        FTDS(:,:,IX,IY,IZ)=WK(:,:)
-
-        IF (CEL1X==0) THEN
-            FTDM(:,:)=WK(:,:)
-        ENDIF
+     IF (KVCX == 0) THEN
+      PX=DCMPLX(0.0D0,0.0D0)
+     ELSE
+      PX=DCMPLX(0.0D0,PI*DFLOAT(IX)/DFLOAT(KVCX))
+     ENDIF
+     IF (KVCY == 0) THEN
+      PY=DCMPLX(0.0D0,0.0D0)
+     ELSE
+      PY=DCMPLX(0.0D0,PI*DFLOAT(IY)/DFLOAT(KVCY))
+     ENDIF
+     IF (KVCZ == 0) THEN
+      PZ=DCMPLX(0.0D0,0.0D0)
+     ELSE
+      PZ=DCMPLX(0.0D0,PI*DFLOAT(IZ)/DFLOAT(KVCZ))
+     ENDIF
+     W=1.0D0/DFLOAT(MAX(1,2*KVCX)*MAX(1,2*KVCY)*MAX(1,2*KVCZ))
+ 
+     DO QX=-CEL1X,CEL1X
+     DO QY=-CEL1Y,CEL1Y
+     DO QZ=-CEL1Z,CEL1Z
+      PQX=PX*DFLOAT(QX)
+      PQY=PY*DFLOAT(QY)
+      PQZ=PZ*DFLOAT(QZ)
+      DO J=1,NCGS
+      DO K=1,NCGS
+       WF(K,J)=WF(K,J)+F_C(K,J,QX,QY,QZ)*CDEXP(PQX+PQY+PQZ)
+          ! WRITE(*,*) 'F_C(',K,',',J,',',QX,',',QY,',',QZ,') = ',F_C(K,J,QX,QY,QZ)
+          ! WRITE(*,*) 'WF(',K,',',J,') = ',WF(K,J)
+      ENDDO
+      ENDDO
+     ENDDO
+     ENDDO
+     ENDDO
+ 
+     DO J=1,NCGS
+     DO K=1,NCGS
+      AVE=(WF(K,J)+DCONJG(WF(J,K)))/2.0D0
+      WF(K,J)=AVE
+      WF(J,K)=DCONJG(AVE)
+     ENDDO
+     ENDDO
+ 
+     DO J=1,NCGS
+     DO K=1,NCGS
+      TMP(J,K)=DCMPLX(0.0D0,0.0D0)
+      DO L=1,NCGS
+       TMP(J,K)=TMP(J,K)+WF(J,L)*CO(L,K,IX,IY,IZ)
+      ENDDO
+     ENDDO
+     ENDDO
+ 
+     DO J=1,NCGS
+     DO K=1,NCGS
+      WK(J,K)=DCMPLX(0.0D0,0.0D0)
+      DO L=1,NCGS
+       WK(J,K)=WK(J,K)+DCONJG(CO(L,J,IX,IY,IZ))*TMP(L,K)
+      ENDDO
+     ENDDO
+     ENDDO
+ 
+     FTDS(:,:,IX,IY,IZ)=WK(:,:)
+ 
+     IF (CEL1X==0) THEN
+      FTDM(:,:)=WK(:,:)
+     ENDIF
 
 
     ENDDO
