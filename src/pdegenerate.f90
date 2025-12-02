@@ -234,12 +234,12 @@ if ((itarget==0).or.(i==itarget)) then
         ENDDO
         IF (LCHECK) WRITE(*,'(A,I5,X,I2,A,100I8)') '***** STATE ',I,K,'-FOLD DEGENERATE:',(LIST(J),J=1,K)
         IF (.NOT.LCHECK) WRITE(*,'(A,I5,X,I2,A,100I8)') '===== STATE ',I,K,'-FOLD DEGENERATE, UNCOUPLED:',(LIST(J),J=1,K)
-        WRITE(6,'(A,I3,A)') 'ORDER:',IORDER,' ACCUMULATED HIRSCHFELDER-CERTAIN ENERGY MATRIX'
+!       WRITE(6,'(A,I3,A)') 'ORDER:',IORDER,' ACCUMULATED HIRSCHFELDER-CERTAIN ENERGY MATRIX'
 ! *** NOTE: Diagonalization of incremental (e.g., second-order) H-C energy matrix gives
 !           correct eigenvalues, but the order of states is scrambled. Summing over eigenvalues
 !           in the order of their sizes will be incorrect. The same eigenvector for a higher
 !           perturbation order diagonalizes all lower-order H-C energy matrices.
-        CALL DUMP5(A,K)
+!       CALL DUMP5(A,K)
         CALL DGEEV('N','V',K,A,K,ER,EI,VL,1,VR,K,WK,4*K,INFO)
         IF (INFO /= 0) CALL PABORT('DGEEV FAILED TO DIAGONALIZE A MATRIX')
         CALL PIKSRT2(K,K,ER,EI,VR,WK)
@@ -340,6 +340,8 @@ endif
 
     DO IORDER=1,ORDER
      CALL EHC_GEN_MIN(IORDER,0,LIST,JDEGEN)
+!    WRITE(6,'(A,I3,A)') 'ORDER:',IORDER,' INCREMENTAL HIRSCHFELDER-CERTAIN ENERGY MATRIX'
+!    CALL DUMP5(EHC(:,:,IORDER),JDEGEN)
      EHCSUM=EHCSUM+EHC(:,:,IORDER)
      ALLOCATE(A(JDEGEN,JDEGEN),ER(JDEGEN),EI(JDEGEN),VR(JDEGEN,JDEGEN),VL(1,JDEGEN),WK(4*JDEGEN))
      LCHECK=.FALSE.
@@ -2147,7 +2149,7 @@ SUBROUTINE DEGENERATE_CI
        ENDDO
        WRITE(6,'(A,I8,A,I8,A,I3,A)') 'SUBSPACE DIAGONALIZATION OF ',NCFA*NCFB,' X ',NCFA*NCFB,' MATRIX FOR ',MDEGEN(I),' ROOTS'
        ALLOCATE(ENE(MDEGEN(I)))
-       CALL DCI_GEN_SUB(MDEGEN(I),MLIST(:,I),ENE)
+       CALL DCI_GEN_SUB(MDEGEN(I),MLIST(:,I),ENE,E0)
        DO J=1,MDEGEN(I)
         ER(MLIST(J,I))=ENE(J)
         CLOSE(800+J)
@@ -2520,7 +2522,7 @@ SUBROUTINE DEGENERATE_CI
       IF (NREFMAP(I) /= 1) LEXIST=.TRUE.
      ENDDO
 !write(*,*) 'mapping failure logic bypassed'
-     IF (LALL.AND.LEXIST) CALL PABORT('MAPPING FAILURE')
+     IF (LALL.AND.LFULL.AND.LEXIST) CALL PABORT('MAPPING FAILURE')
  
      DEALLOCATE(ITARGETS,MDEGEN,MLIST)
      DEALLOCATE(ER) 
@@ -2595,7 +2597,7 @@ END SUBROUTINE
 
 
 
-SUBROUTINE DCI_GEN_SUB(NDEGEN,LIST,ENE)
+SUBROUTINE DCI_GEN_SUB(NDEGEN,LIST,ENE,E0)
 ! CALCULATE FULL CI MATRIX
 
    USE CONSTANTS
@@ -2607,6 +2609,7 @@ SUBROUTINE DCI_GEN_SUB(NDEGEN,LIST,ENE)
    USE THR_FULLCI
 
    IMPLICIT NONE
+   DOUBLE PRECISION :: E0(NCFA*NCFB)
    INTEGER,PARAMETER :: MAXCYCLE=1000
    INTEGER,PARAMETER :: MAXFILE=1000
    INTEGER :: NDEGEN
@@ -2757,26 +2760,27 @@ SUBROUTINE DCI_GEN_SUB(NDEGEN,LIST,ENE)
      ! FORM A NEW SUBSPACE VECTOR BY KNOWLES-HANDY SCHEME
      DO IA=1,NCFA
       DO IB=1,NCFB
-       NOPEN=0
-       DO I=1,IALL(0,0,0)-IVIRTCORE
-        N(I)=0
-        IF (BTEST(CFHALFA(IA),I-1)) N(I)=1
-        IF (BTEST(CFHALFB(IB),I-1)) N(I)=N(I)+1
-        NOPEN=NOPEN+N(I)*(2-N(I))
-       ENDDO
-       IF (NOPEN == 0) THEN
-        F=0.0D0
-       ELSE
-        F=-DFLOAT(NOPEN)/DFLOAT(NOPEN*(NOPEN-1))
-       ENDIF
-       D=0.0D0
-       DO I=1,IALL(0,0,0)-IVIRTCORE
-        D=D+DFLOAT(N(I))*H(I,I)-DFLOAT(N(I)*(2-N(I)))*G(I,I,I,I)/4.0D0
-        DO J=1,IALL(0,0,0)-IVIRTCORE
-         D=D+DFLOAT(N(I)*N(J))*(2.0D0*G(I,I,J,J)-G(I,J,J,I))/4.0D0
-         IF (I /= J) D=D-F*DFLOAT(N(I)*(2-N(I))*N(J)*(2-N(J)))*G(I,J,J,I)/4.0D0
-        ENDDO
-       ENDDO
+!      NOPEN=0
+!      DO I=1,IALL(0,0,0)-IVIRTCORE
+!       N(I)=0
+!       IF (BTEST(CFHALFA(IA),I-1)) N(I)=1
+!       IF (BTEST(CFHALFB(IB),I-1)) N(I)=N(I)+1
+!       NOPEN=NOPEN+N(I)*(2-N(I))
+!      ENDDO
+!      IF (NOPEN == 0) THEN
+!       F=0.0D0
+!      ELSE
+!       F=-DFLOAT(NOPEN)/DFLOAT(NOPEN*(NOPEN-1))
+!      ENDIF
+!      D=0.0D0
+!      DO I=1,IALL(0,0,0)-IVIRTCORE
+!       D=D+DFLOAT(N(I))*H(I,I)-DFLOAT(N(I)*(2-N(I)))*G(I,I,I,I)/4.0D0
+!       DO J=1,IALL(0,0,0)-IVIRTCORE
+!        D=D+DFLOAT(N(I)*N(J))*(2.0D0*G(I,I,J,J)-G(I,J,J,I))/4.0D0
+!        IF (I /= J) D=D-F*DFLOAT(N(I)*(2-N(I))*N(J)*(2-N(J)))*G(I,J,J,I)/4.0D0
+!       ENDDO
+!      ENDDO
+       D=E0((IA-1)*NCFB+IB)
        IF ((LAMBDA(K)-D) /= 0.0D0) VEC1(IB,IA)=VEC1(IB,IA)/(LAMBDA(K)-D)
       ENDDO
      ENDDO
@@ -2838,7 +2842,7 @@ SUBROUTINE DCI_GEN_SUB(NDEGEN,LIST,ENE)
       D=0.0D0
       DO IA=1,NCFA
        DO IB=1,NCFB
-        D=D+VEC1(IA,IB)**2
+        D=D+VEC1(IB,IA)**2
        ENDDO
       ENDDO
       VEC1=VEC1/DSQRT(D)
@@ -2846,8 +2850,8 @@ SUBROUTINE DCI_GEN_SUB(NDEGEN,LIST,ENE)
       PERCENTD=0.0D0
       DO IA=1,NCFA
        DO IB=1,NCFB
-        IF (NORDERA(IA)+NORDERB(IB) == 1) PERCENTS=PERCENTS+VEC1(IA,IB)**2
-        IF (NORDERA(IA)+NORDERB(IB) == 2) PERCENTD=PERCENTD+VEC1(IA,IB)**2
+        IF (NORDERA(IA)+NORDERB(IB) == 1) PERCENTS=PERCENTS+VEC1(IB,IA)**2
+        IF (NORDERA(IA)+NORDERB(IB) == 2) PERCENTD=PERCENTD+VEC1(IB,IA)**2
        ENDDO
       ENDDO
       WRITE(6,'(A,F6.2)') ' %SINGLES = ',PERCENTS*1.0D2
