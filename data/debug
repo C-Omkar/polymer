@@ -1,8 +1,8 @@
-#!/bin/csh -f
+#!/bin/tcsh -f
 
-mkdir /Users/sohirata/Documents/Git/polymer/`uname -n`.$$.hirata
-setenv PHOME /Users/sohirata/Documents/Git/polymer
-setenv PWORK /Users/sohirata/Documents/Git/polymer/`uname -n`.$$.hirata
+mkdir /home/omkar/PhD/Code/polymer/`uname -n`.$$.omkar
+setenv PHOME /home/omkar/PhD/Code/polymer
+setenv PWORK /home/omkar/PhD/Code/polymer/`uname -n`.$$.omkar
 
 # Printing input/output file names
 echo 'Entering polymer program'
